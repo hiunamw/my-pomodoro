@@ -11,8 +11,8 @@
       --text: #f8fafc;
       --muted: #b8c0cc;
       --line: rgba(255, 255, 255, 0.18);
-      --accent: #66e3c4;
-      --accent-2: #ffd166;
+      --accent: #a855f7;
+      --accent-2: #d946ef;
       --danger: #ff7a90;
       --shadow: 0 24px 80px rgba(0, 0, 0, 0.34);
       color-scheme: dark;
@@ -57,11 +57,30 @@
       isolation: isolate;
     }
 
+    .app.toolbar-hidden {
+      grid-template-columns: 1fr;
+    }
+
+    .app.toolbar-hidden .settings {
+      display: none;
+    }
+
+    .app.toolbar-hidden .timer {
+      margin-inline: auto;
+      text-align: center;
+    }
+
+    .app.toolbar-hidden .mode-row,
+    .app.toolbar-hidden .session-line,
+    .app.toolbar-hidden .controls {
+      justify-content: center;
+    }
+
     .background {
       position: fixed;
       inset: 0;
       z-index: -3;
-      background: linear-gradient(135deg, #17202e, #1d4d55 52%, #403052);
+      background: linear-gradient(135deg, #070814, #25104a 52%, #6d28d9);
       background-position: center;
       background-size: cover;
       transition: filter 220ms ease, transform 220ms ease;
@@ -119,9 +138,10 @@
     }
 
     .mode-btn.active {
-      background: rgba(102, 227, 196, 0.18);
-      border-color: rgba(102, 227, 196, 0.56);
+      background: linear-gradient(135deg, rgba(109, 40, 217, 0.72), rgba(217, 70, 239, 0.34));
+      border-color: rgba(216, 180, 254, 0.72);
       color: var(--text);
+      box-shadow: 0 0 28px rgba(168, 85, 247, 0.34);
     }
 
     .time {
@@ -164,10 +184,10 @@
       min-height: 52px;
       padding: 0 22px;
       border-radius: 8px;
-      background: var(--accent);
-      color: #06221c;
+      background: linear-gradient(135deg, #7c3aed, #d946ef);
+      color: #fff;
       font-weight: 800;
-      box-shadow: 0 18px 44px rgba(102, 227, 196, 0.28);
+      box-shadow: 0 18px 44px rgba(124, 58, 237, 0.38), 0 0 26px rgba(217, 70, 239, 0.22);
     }
 
     .icon-btn,
@@ -435,7 +455,7 @@
   <div class="background" id="background"></div>
   <div class="veil" id="veil"></div>
 
-  <main class="app">
+  <main class="app" id="app">
     <section class="timer-shell" aria-label="Pomodoro timer">
       <div class="timer">
         <p class="eyebrow" id="todayLabel">今日專注一下</p>
@@ -458,6 +478,7 @@
             <svg viewBox="0 0 24 24"><path d="m5 4 10 8-10 8V4Z"/><path d="M19 5v14"/></svg>
           </button>
           <button class="secondary-btn" id="fullscreen" type="button">Fullscreen</button>
+          <button class="secondary-btn" id="toggleToolbar" type="button">Hide toolbar</button>
         </div>
       </div>
     </section>
@@ -562,7 +583,7 @@
 
   <script>
     const presets = [
-      { name: "Lagoon", a: "#17202e", b: "#1d4d55", c: "#403052" },
+      { name: "Monarch", a: "#070814", b: "#25104a", c: "#6d28d9" },
       { name: "Moss", a: "#10251d", b: "#2f5c48", c: "#a9b85f" },
       { name: "Ink", a: "#09111f", b: "#27314d", c: "#6f4967" },
       { name: "Coral", a: "#332235", b: "#8f4c5d", c: "#f4b26d" },
@@ -604,6 +625,7 @@
     const background = $("background");
     const veil = $("veil");
     const toast = $("toast");
+    const app = $("app");
 
     init();
 
@@ -620,6 +642,7 @@
       $("autoStart").checked = state.autoStart;
       renderSwatches();
       applyBackground();
+      applyEmbedMode();
       setMode(mode, false);
       bindEvents();
     }
@@ -629,6 +652,7 @@
       $("reset").addEventListener("click", () => resetTimer(true));
       $("skip").addEventListener("click", completeMode);
       $("fullscreen").addEventListener("click", toggleFullscreen);
+      $("toggleToolbar").addEventListener("click", toggleToolbar);
       $("testSound").addEventListener("click", playSound);
       $("clearBackground").addEventListener("click", clearBackground);
       $("resetAll").addEventListener("click", resetAll);
@@ -903,6 +927,18 @@
       } else {
         document.documentElement.requestFullscreen();
       }
+    }
+
+    function applyEmbedMode() {
+      const params = new URLSearchParams(window.location.search);
+      const shouldEmbed = params.get("embed") === "1" || window.location.hash === "#embed";
+      app.classList.toggle("toolbar-hidden", shouldEmbed);
+      $("toggleToolbar").textContent = shouldEmbed ? "Show toolbar" : "Hide toolbar";
+    }
+
+    function toggleToolbar() {
+      const hidden = app.classList.toggle("toolbar-hidden");
+      $("toggleToolbar").textContent = hidden ? "Show toolbar" : "Hide toolbar";
     }
 
     function clearBackground() {
